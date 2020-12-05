@@ -6,10 +6,8 @@ import numpy
 # Install PyGAD: pip install pygad
 # PyGAD source code at GitHub: https://github.com/ahmedfgad/GeneticAlgorithmPython
 
-def cal_pop_fitness(equation_inputs, pop):
-    # Calculating the fitness value of each solution in the current population.
-    # The fitness function caulcuates the sum of products between each input and its corresponding weight.
-    fitness = numpy.sum(pop * equation_inputs, axis=1)
+def cal_pop_fitness(blocks, grid):
+    fitness = grid.calculate_blocks_score(blocks)
     return fitness
 
 
