@@ -34,7 +34,11 @@ def initialize_population(blocks, pop_size):
 def main():
     # Inputs of the equation.
     # x, y, w, h
-    blocks = [[77, 44, 200, 50], [456, 230, 70, 32]]
+    blocks = [
+        [20, 44, 200, 50],
+        [234, 120, 70, 32],
+        [200, 27, 70, 32],
+    ]
     blocks = np.array(blocks, dtype=np.uint8)
     this_grid = Grid(rows=6)
     this_grid.visualize(blocks=blocks)
@@ -47,17 +51,16 @@ def main():
         Population size
     """
     pop_size = 48
-    num_parents_mating = 4
+    num_parents_mating = 2
     num_offspring = pop_size - num_parents_mating
     population = initialize_population(blocks, pop_size)
 
     num_generations = 30
-
-
+    best_agents = []
     for generation in range(num_generations):
         print("Generation : ", generation)
         # Measuring the fitness
-        fitness = ga.cal_pop_fitness(population, this_grid)
+        fitness = ga.cal_pop_fitness(population, this_grid, blocks)
 
         # Selecting the best parents in the population for mating.
         parents = ga.select_mating_pool(population, fitness,
@@ -75,11 +78,16 @@ def main():
         print('Best idx: ', best_match_idx)
         print("Best solution : ", population[best_match_idx])
         print("Best solution fitness : ", fitness[best_match_idx])
-        if max(fitness[best_match_idx] == 1.0):
+        best_best_idx = best_match_idx[0] if len(best_match_idx[0]) > 1 else best_match_idx[0][0]
+
+        very_best = population[best_best_idx].squeeze().copy()
+        best_agents.append(very_best)
+        if max(fitness[best_match_idx] == 1.0) or generation == num_generations - 1:
             print(f'Found earlier, generation: {generation}')
-            if len(best_match_idx[0]) > 1:
-                best_match_idx = best_match_idx[0][0]
-            this_grid.visualize(blocks=population[best_match_idx].squeeze())
+            im = this_grid.visualize(blocks=population[best_best_idx].squeeze(), show=True)
+            imgs = [this_grid.visualize(agent) for agent in best_agents]
+            im.save('test.gif', save_all=True, append_images=imgs)
+
             break
 
 

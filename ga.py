@@ -8,10 +8,10 @@ import random
 # PyGAD source code at GitHub: https://github.com/ahmedfgad/GeneticAlgorithmPython
 
 
-def cal_pop_fitness(population, grid):
+def cal_pop_fitness(population, grid, original_blocks):
     fitness = np.zeros(population.shape[0])
     for i, blocks in enumerate(population):
-        fitness[i] = grid.calculate_blocks_score(blocks)
+        fitness[i] = grid.calculate_blocks_score(blocks, original_blocks)
     return fitness
 
 
@@ -57,5 +57,5 @@ def mutation(pop):
         diff_mutations = np.random.randint(-10, 10, size=p.shape)
         abs_mutations = np.random.randint(0, 1000, size=p.shape)
         pop[idx] = p + (diff_mutation_mask * diff_mutations)
-        # pop[idx] = (abs_mutations * abs_mutation_mask) + (1 - abs_mutation_mask) * p
+        pop[idx] = (abs_mutations * abs_mutation_mask) + (1 - abs_mutation_mask) * p
     return pop

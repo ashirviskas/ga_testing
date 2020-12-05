@@ -42,16 +42,18 @@ class Grid:
         idx = tot_dist.argmin()
         return idx, tot_dist[idx]
 
-    def calculate_blocks_score(self, blocks):
+    def calculate_blocks_score(self, blocks, original_blocks):
+        total_diff = abs(blocks - original_blocks).sum()
+
         upper_left_corners = np.where(self.np_grid == 0)
         distances = []
         for block in blocks:
             idx, dist = self.find_nearest_point(upper_left_corners, block)
             distances.append(dist)
 
-        return 1 / (sum(distances) + 1)
+        return -((sum(distances) ** 2) + 1 + total_diff / 10)
 
-    def visualize(self, blocks=None):
+    def visualize(self, blocks=None, show=False):
         img = Image.new('RGBA', self.np_grid.shape)
         upper_left_corners = np.where(self.np_grid == 0)
         draw = ImageDraw.Draw(img)
@@ -62,7 +64,10 @@ class Grid:
             for block in blocks:
                 draw = ImageDraw.Draw(img)
                 draw.rectangle((block[0], block[1], block[0] + self.col_size, block[1] + self.row_size), fill=(120, 255, 255, 160))
-        img.show()
+        if show:
+            img.show()
+        return img
+
 
 
 if __name__ == '__main__':
