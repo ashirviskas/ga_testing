@@ -41,7 +41,7 @@ def main():
     ]
     blocks = np.array(blocks, dtype=np.uint8)
     this_grid = Grid(rows=6)
-    this_grid.visualize(blocks=blocks)
+    this_grid.visualize(blocks=blocks, show=True)
 
     # Number of the weights we are looking to optimize.
 
@@ -51,11 +51,11 @@ def main():
         Population size
     """
     pop_size = 48
-    num_parents_mating = 2
+    num_parents_mating = 4
     num_offspring = pop_size - num_parents_mating
     population = initialize_population(blocks, pop_size)
 
-    num_generations = 30
+    num_generations = 120
     best_agents = []
     for generation in range(num_generations):
         print("Generation : ", generation)
@@ -63,8 +63,7 @@ def main():
         fitness = ga.cal_pop_fitness(population, this_grid, blocks)
 
         # Selecting the best parents in the population for mating.
-        parents = ga.select_mating_pool(population, fitness,
-                                        num_parents_mating)
+        parents = ga.select_mating_pool(population, fitness, num_parents_mating)
 
         # Generating next generation using crossover.
         offspring_crossover = ga.crossover(parents, num_offspring)
@@ -75,24 +74,25 @@ def main():
         # The best result in the current iteration.
         print("Best result : ", max(fitness))
         best_match_idx = numpy.where(fitness == numpy.max(fitness))
+        best_fitness = fitness[best_match_idx]
         print('Best idx: ', best_match_idx)
         print("Best solution : ", population[best_match_idx])
-        print("Best solution fitness : ", fitness[best_match_idx])
+        print("Best solution fitness : ", best_fitness)
         best_best_idx = best_match_idx[0] if len(best_match_idx[0]) > 1 else best_match_idx[0][0]
 
         very_best = population[best_best_idx].squeeze().copy()
         best_agents.append(very_best)
         if max(fitness[best_match_idx] == 1.0) or generation == num_generations - 1:
             print(f'Found earlier, generation: {generation}')
-            im = this_grid.visualize(blocks=population[best_best_idx].squeeze(), show=True)
+            im = this_grid.visualize(blocks=best_agents[-1], show=True)
             imgs = [this_grid.visualize(agent) for agent in best_agents]
-            im.save('test.gif', save_all=True, append_images=imgs)
+            im.save('test.gif', save_all=True, append_images=[im] * 3 + imgs)
 
             break
 
 
         # Creating the new population based on the parents and offspring.
-        population[0:parents.shape[0], :] = parents
+        population[:parents.shape[0], :] = parents
         population[parents.shape[0]:, :] = offspring_mutation
 
     # Getting the best solution after iterating finishing all generations.
