@@ -46,11 +46,11 @@ def main():
         Population size
     """
     pop_size = 48
-    num_parents_mating = 8
+    num_parents_mating = 4
     num_offspring = pop_size - num_parents_mating
     population = initialize_population(blocks, pop_size)
 
-    num_generations = 20
+    num_generations = 30
 
     for generation in range(num_generations):
         print("Generation : ", generation)
@@ -73,6 +73,9 @@ def main():
         print('Best idx: ', best_match_idx)
         print("Best solution : ", population[best_match_idx])
         print("Best solution fitness : ", fitness[best_match_idx])
+        if max(fitness[best_match_idx] == 1.0):
+            print(f'Found earlier, generation: {generation}')
+            break
 
 
         # Creating the new population based on the parents and offspring.
