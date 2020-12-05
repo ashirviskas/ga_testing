@@ -51,11 +51,11 @@ def mutation(pop):
     for idx, p in enumerate(pop):
         # The random value to be added to the gene.
         diff_mutation_mask = np.random.choice([0, 1], size=p.shape, p=[0.8, 0.2])
-        abs_mutation_mask = np.random.choice([0, 1], size=p.shape, p=[0.8, 0.2])
+        abs_mutation_mask = np.random.choice([0, 1], size=p.shape, p=[0.9, 0.1])
 
 
-        diff_mutations = np.random.randint(-5, 5, size=p.shape)
+        diff_mutations = np.random.randint(-10, 10, size=p.shape)
         abs_mutations = np.random.randint(0, 1000, size=p.shape)
         pop[idx] = p + (diff_mutation_mask * diff_mutations)
-        pop[idx] = (abs_mutations * abs_mutation_mask) + (1 - abs_mutation_mask) * p
+        # pop[idx] = (abs_mutations * abs_mutation_mask) + (1 - abs_mutation_mask) * p
     return pop

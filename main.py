@@ -34,7 +34,7 @@ def initialize_population(blocks, pop_size):
 def main():
     # Inputs of the equation.
     # x, y, w, h
-    blocks = [[65, 44, 200, 50], [456, 230, 70, 32]]
+    blocks = [[77, 44, 200, 50], [456, 230, 70, 32]]
     blocks = np.array(blocks, dtype=np.uint8)
     this_grid = Grid()
 
@@ -45,11 +45,12 @@ def main():
         Mating pool size
         Population size
     """
-    pop_size = 8
-    num_parents_mating = 4
+    pop_size = 48
+    num_parents_mating = 8
+    num_offspring = pop_size - num_parents_mating
     population = initialize_population(blocks, pop_size)
 
-    num_generations = 5
+    num_generations = 20
 
     for generation in range(num_generations):
         print("Generation : ", generation)
@@ -61,14 +62,10 @@ def main():
                                         num_parents_mating)
 
         # Generating next generation using crossover.
-        offspring_crossover = ga.crossover(parents, 4)
+        offspring_crossover = ga.crossover(parents, num_offspring)
 
         # Adding some variations to the offsrping using mutation.
         offspring_mutation = ga.mutation(offspring_crossover)
-
-        # Creating the new population based on the parents and offspring.
-        population[0:parents.shape[0], :] = parents
-        population[parents.shape[0]:, :] = offspring_mutation
 
         # The best result in the current iteration.
         print("Best result : ", max(fitness))
@@ -77,14 +74,19 @@ def main():
         print("Best solution : ", population[best_match_idx])
         print("Best solution fitness : ", fitness[best_match_idx])
 
+
+        # Creating the new population based on the parents and offspring.
+        population[0:parents.shape[0], :] = parents
+        population[parents.shape[0]:, :] = offspring_mutation
+
     # Getting the best solution after iterating finishing all generations.
     # At first, the fitness is calculated for each solution in the final generation.
-    fitness = ga.cal_pop_fitness(population, this_grid)
+    # fitness = ga.cal_pop_fitness(population, this_grid)
     # Then return the index of that solution corresponding to the best fitness.
-    best_match_idx = numpy.where(fitness == numpy.max(fitness))
-    print('Best idx: ', best_match_idx)
-    print("Best solution : ", population[best_match_idx])
-    print("Best solution fitness : ", fitness[best_match_idx])
+    # best_match_idx = numpy.where(fitness == numpy.max(fitness))
+    # print('Best idx: ', best_match_idx)
+    # print("Best solution : ", population[best_match_idx])
+    # print("Best solution fitness : ", fitness[best_match_idx])
 
 
 if __name__ == '__main__':
