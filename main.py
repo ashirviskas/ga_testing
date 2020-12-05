@@ -3,6 +3,7 @@ import ga
 from block import Block
 from grid import Grid
 import numpy as np
+import random
 
 """
 The y=target is to maximize this equation ASAP:
@@ -13,61 +14,78 @@ The y=target is to maximize this equation ASAP:
 """
 
 
+# Random number chance
+def rnc(num, a, b, chance):
+    if random.random() < chance:
+        return random.randint(a, b)
+    else:
+        return num
+
+
+def initialize_population(blocks, pop_size):
+    population = np.tile(blocks, (pop_size, 1, 1))
+    for i in range(1, len(population)):
+        for j in range(len(population[i])):
+            population[i, j, 0] = rnc(population[i, j, 0], 3, 1000, 0.35)
+            population[i, j, 1] = rnc(population[i, j, 1], 3, 200, 0.35)
+    return population
+
+
 def main():
     # Inputs of the equation.
     # x, y, w, h
-    blocks = [[65, 44, 200, 50]]
+    blocks = [[65, 44, 200, 50], [456, 230, 70, 32]]
     blocks = np.array(blocks, dtype=np.uint8)
     this_grid = Grid()
-    # equation_inputs = [4, -2, 3.5, 5, -11, -4.7]
 
     # Number of the weights we are looking to optimize.
-    num_weights = 6
 
     """
     Genetic algorithm parameters:
         Mating pool size
         Population size
     """
-    sol_per_pop = 8
+    pop_size = 8
     num_parents_mating = 4
+    population = initialize_population(blocks, pop_size)
 
-    # Defining the population size.
-    pop_size = (sol_per_pop,
-                num_weights)  # The population will have sol_per_pop chromosome where each chromosome has num_weights genes.
-    # Creating the initial population.
     num_generations = 5
+
     for generation in range(num_generations):
         print("Generation : ", generation)
-        # Measing the fitness of each chromosome in the population.
-        fitness = ga.cal_pop_fitness(blocks, this_grid)
+        # Measuring the fitness
+        fitness = ga.cal_pop_fitness(population, this_grid)
 
         # Selecting the best parents in the population for mating.
-        parents = ga.select_mating_pool(new_population, fitness,
+        parents = ga.select_mating_pool(population, fitness,
                                         num_parents_mating)
 
         # Generating next generation using crossover.
-        offspring_crossover = ga.crossover(parents,
-                                           offspring_size=(pop_size[0] - parents.shape[0], num_weights))
+        offspring_crossover = ga.crossover(parents, 4)
 
         # Adding some variations to the offsrping using mutation.
         offspring_mutation = ga.mutation(offspring_crossover)
 
         # Creating the new population based on the parents and offspring.
-        new_population[0:parents.shape[0], :] = parents
-        new_population[parents.shape[0]:, :] = offspring_mutation
+        population[0:parents.shape[0], :] = parents
+        population[parents.shape[0]:, :] = offspring_mutation
 
         # The best result in the current iteration.
-        print("Best result : ", numpy.max(numpy.sum(new_population * equation_inputs, axis=1)))
+        print("Best result : ", max(fitness))
+        best_match_idx = numpy.where(fitness == numpy.max(fitness))
+        print('Best idx: ', best_match_idx)
+        print("Best solution : ", population[best_match_idx])
+        print("Best solution fitness : ", fitness[best_match_idx])
 
     # Getting the best solution after iterating finishing all generations.
     # At first, the fitness is calculated for each solution in the final generation.
-    fitness = ga.cal_pop_fitness(equation_inputs, new_population)
+    fitness = ga.cal_pop_fitness(population, this_grid)
     # Then return the index of that solution corresponding to the best fitness.
     best_match_idx = numpy.where(fitness == numpy.max(fitness))
-
-    print("Best solution : ", new_population[best_match_idx, :])
+    print('Best idx: ', best_match_idx)
+    print("Best solution : ", population[best_match_idx])
     print("Best solution fitness : ", fitness[best_match_idx])
+
 
 if __name__ == '__main__':
     main()

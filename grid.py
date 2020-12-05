@@ -23,7 +23,8 @@ class Grid:
         # a = self.np_grid.T
         # print(self.np_grid.shape)
 
-    def find_nearest_point(self, indexes, point):
+    @staticmethod
+    def find_nearest_point(indexes, point):
         x_dist = np.subtract(indexes[0], point[0])
         y_dist = np.subtract(indexes[1], point[1])
         tot_dist = np.power(np.power(x_dist, 2) + np.power(y_dist, 2), 1/2)
