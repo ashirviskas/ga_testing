@@ -36,7 +36,8 @@ def main():
     # x, y, w, h
     blocks = [[77, 44, 200, 50], [456, 230, 70, 32]]
     blocks = np.array(blocks, dtype=np.uint8)
-    this_grid = Grid()
+    this_grid = Grid(rows=6)
+    this_grid.visualize(blocks=blocks)
 
     # Number of the weights we are looking to optimize.
 
@@ -51,6 +52,7 @@ def main():
     population = initialize_population(blocks, pop_size)
 
     num_generations = 30
+
 
     for generation in range(num_generations):
         print("Generation : ", generation)
@@ -75,6 +77,9 @@ def main():
         print("Best solution fitness : ", fitness[best_match_idx])
         if max(fitness[best_match_idx] == 1.0):
             print(f'Found earlier, generation: {generation}')
+            if len(best_match_idx[0]) > 1:
+                best_match_idx = best_match_idx[0][0]
+            this_grid.visualize(blocks=population[best_match_idx].squeeze())
             break
 
 
