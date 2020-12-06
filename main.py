@@ -15,12 +15,13 @@ The y=target is to maximize this equation ASAP:
 
 
 class Evolution:
-    def __init__(self, blocks, this_grid, pop_size, num_parents_mating=2, num_generations=120):
+    def __init__(self, blocks, this_grid, pop_size, num_parents_mating=2, num_generations=120, verbose=False):
         self.blocks = blocks
         self.this_grid = this_grid
         self.pop_size = pop_size
         self.num_parents_mating = num_parents_mating
         self.num_generations = num_generations
+        self.verbose = verbose
 
         self.num_offspring = pop_size - num_parents_mating
 
@@ -36,7 +37,7 @@ class Evolution:
             diff_mutations = np.random.randint(-10, 10, size=self.population[i].shape)
             self.population[i, diff_mutation_mask] = np.abs(self.population[i] + diff_mutations)[diff_mutation_mask]
 
-    def generation(self):
+    def generation(self, i):
         # Measuring the fitness
         fitness = ga.cal_pop_fitness(self.population, self.this_grid, self.blocks)
 
@@ -47,16 +48,19 @@ class Evolution:
         offspring_crossover = ga.crossover(parents, self.population, self.num_offspring)
 
         # Adding some variations to the offsrping using mutation.
-        offspring_mutation = ga.mutation(offspring_crossover)
+        mutation_strength = (self.num_generations / (self.num_generations - i)) * 2
+        offspring_mutation = ga.mutation(offspring_crossover, mutation_scale=mutation_strength)
 
-        # The best result in the current iteration.
-        print("Best result : ", max(fitness))
-        print("Average result : ", sum(fitness) / len(fitness))
         best_match_idx = np.argmax(fitness)
         best_fitness = fitness[best_match_idx]
-        print('Best idx: ', best_match_idx)
-        print("Best solution : ", self.population[best_match_idx])
-        print("Best solution fitness : ", best_fitness)
+        print(f'Generation {i} Best result : {max(fitness)}')
+        if self.verbose:
+
+            print('Average result : ', sum(fitness) / len(fitness))
+
+            print('Best idx: ', best_match_idx)
+            print('Best solution : ', self.population[best_match_idx])
+            print('Best solution fitness : ', best_fitness)
 
         very_best = self.population[best_match_idx].squeeze().copy()
 
@@ -67,7 +71,7 @@ class Evolution:
 
     def evolve(self):
         for i in range(self.num_generations):
-            self.generation()
+            self.generation(i)
 
             if i == self.num_generations - 1:
                 print(f'Found earlier, generation: {i}')
@@ -89,18 +93,10 @@ def main():
     this_grid = Grid(rows=6)
     initial_img = this_grid.visualize(blocks=blocks, show=False)
     initial_img.save('initial_img.png')
-    # Number of the weights we are looking to optimize.
+    pop_size = 48
+    num_parents_mating = 3
 
-    """
-    Genetic algorithm parameters:
-        Mating pool size
-        Population size
-    """
-    pop_size = 12
-    num_parents_mating = 2
-
-
-    num_generations = 120
+    num_generations = 360
 
     ev = Evolution(blocks, this_grid, pop_size, num_parents_mating, num_generations)
     ev.evolve()

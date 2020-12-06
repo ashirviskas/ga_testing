@@ -43,7 +43,6 @@ def crossover(leaders, population, num_offspring):
         mask = np.random.choice([0, 1], size=leaders[0].shape, p=[0.5, 0.5])
         mask_inv = 1 - mask
         offspring[k] = parents[0] * mask + parents[1] * mask_inv
-        print(offspring)
         # The new offspring will have its second half of its genes taken from the second parent.
 
     return offspring

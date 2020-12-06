@@ -21,6 +21,7 @@ class Grid:
         self.col_size = ((self.width - (self.cols - 1) * self.col_gap) // self.cols)
         # upper left corner views
         self.np_grid[0::self.col_size + self.col_gap, 0::self.row_size + self.row_gap] = 0
+        self.upper_left_corners = np.where(self.np_grid == 0)
         # upper right corner views
         self.np_grid[self.col_size::self.col_size + self.col_gap, 0::self.row_size + self.row_gap] = 1
         # bottom left corner views
@@ -46,7 +47,7 @@ class Grid:
     @staticmethod
     def dist_to_score(dist):
         if dist == 0:
-            return 100
+            return 30
         else:
             return -dist
 
@@ -55,9 +56,9 @@ class Grid:
 
         total_diff = abs(blocks - original_blocks).sum()
         scores.append(-total_diff/20)
-        upper_left_corners = np.where(self.np_grid == 0)
+        # upper_left_corners = np.where(self.np_grid == 0)
         for block in blocks:
-            idx, dist = self.find_nearest_point(upper_left_corners, block)
+            idx, dist = self.find_nearest_point(self.upper_left_corners, block)
             score = self.dist_to_score(dist)
             scores.append(score)
         total_score = sum(scores)
@@ -65,10 +66,9 @@ class Grid:
 
     def visualize(self, blocks=None, show=False):
         img = Image.new('RGBA', self.np_grid.shape)
-        upper_left_corners = np.where(self.np_grid == 0)
         draw = ImageDraw.Draw(img)
 
-        for x, y in zip(*upper_left_corners):
+        for x, y in zip(*self.upper_left_corners):
             draw.rectangle((x, y, x + self.col_size, y + self.row_size), fill=(180, 180, 160, 160))
         if blocks is not None:
             for block in blocks:
