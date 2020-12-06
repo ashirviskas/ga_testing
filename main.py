@@ -14,35 +14,81 @@ The y=target is to maximize this equation ASAP:
 """
 
 
-# Random number chance
-def rnc(num, a, b, chance):
-    if random.random() < chance:
-        return random.randint(a, b)
-    else:
-        return num
+class Evolution:
+    def __init__(self, blocks, this_grid, pop_size, num_parents_mating=2, num_generations=120):
+        self.blocks = blocks
+        self.this_grid = this_grid
+        self.pop_size = pop_size
+        self.num_parents_mating = num_parents_mating
+        self.num_generations = num_generations
 
+        self.num_offspring = pop_size - num_parents_mating
 
-def initialize_population(blocks, pop_size):
-    population = np.tile(blocks, (pop_size, 1, 1))
-    for i in range(1, len(population)):
-        for j in range(len(population[i])):
-            population[i, j, 0] = rnc(population[i, j, 0], 3, 1000, 0.35)
-            population[i, j, 1] = rnc(population[i, j, 1], 3, 200, 0.35)
-    return population
+        self.population = None
+        self.best_agents = []
+
+        self.initialize_population()
+
+    def initialize_population(self,):
+        self.population = np.tile(self.blocks, (self.pop_size, 1, 1))
+        for i in range(1, len(self.population)):
+            diff_mutation_mask = np.random.choice([0, 1], size=self.blocks.shape, p=[0.5, 0.5])
+            diff_mutations = np.random.randint(-10, 10, size=self.population[i].shape)
+            self.population[i, diff_mutation_mask] = np.abs(self.population[i] + diff_mutations)[diff_mutation_mask]
+
+    def generation(self):
+        # Measuring the fitness
+        fitness = ga.cal_pop_fitness(self.population, self.this_grid, self.blocks)
+
+        # Selecting the best parents in the population for mating.
+        parents = ga.select_mating_pool(self.population, fitness, self.num_parents_mating)
+
+        # Generating next generation using crossover.
+        offspring_crossover = ga.crossover(parents, self.population, self.num_offspring)
+
+        # Adding some variations to the offsrping using mutation.
+        offspring_mutation = ga.mutation(offspring_crossover)
+
+        # The best result in the current iteration.
+        print("Best result : ", max(fitness))
+        print("Average result : ", sum(fitness) / len(fitness))
+        best_match_idx = np.argmax(fitness)
+        best_fitness = fitness[best_match_idx]
+        print('Best idx: ', best_match_idx)
+        print("Best solution : ", self.population[best_match_idx])
+        print("Best solution fitness : ", best_fitness)
+
+        very_best = self.population[best_match_idx].squeeze().copy()
+
+        # Creating the new population based on the parents and offspring.
+        self.population[:parents.shape[0], :] = parents
+        self.population[parents.shape[0]:, :] = offspring_mutation
+        self.best_agents.append(very_best)
+
+    def evolve(self):
+        for i in range(self.num_generations):
+            self.generation()
+
+            if i == self.num_generations - 1:
+                print(f'Found earlier, generation: {i}')
+                im = self.this_grid.visualize(blocks=self.best_agents[-1], show=True)
+                imgs = [self.this_grid.visualize(agent) for agent in self.best_agents]
+                im.save('test.gif', save_all=True, append_images=[im] * 3 + imgs)
 
 
 def main():
     # Inputs of the equation.
     # x, y, w, h
+
     blocks = [
         [20, 44, 200, 50],
         [234, 120, 70, 32],
         [200, 27, 70, 32],
     ]
-    blocks = np.array(blocks, dtype=np.uint8)
+    blocks = np.array(blocks, dtype=np.int)
     this_grid = Grid(rows=6)
-    this_grid.visualize(blocks=blocks, show=True)
-
+    initial_img = this_grid.visualize(blocks=blocks, show=False)
+    initial_img.save('initial_img.png')
     # Number of the weights we are looking to optimize.
 
     """
@@ -50,50 +96,14 @@ def main():
         Mating pool size
         Population size
     """
-    pop_size = 48
-    num_parents_mating = 4
-    num_offspring = pop_size - num_parents_mating
-    population = initialize_population(blocks, pop_size)
+    pop_size = 12
+    num_parents_mating = 2
+
 
     num_generations = 120
-    best_agents = []
-    for generation in range(num_generations):
-        print("Generation : ", generation)
-        # Measuring the fitness
-        fitness = ga.cal_pop_fitness(population, this_grid, blocks)
 
-        # Selecting the best parents in the population for mating.
-        parents = ga.select_mating_pool(population, fitness, num_parents_mating)
-
-        # Generating next generation using crossover.
-        offspring_crossover = ga.crossover(parents, num_offspring)
-
-        # Adding some variations to the offsrping using mutation.
-        offspring_mutation = ga.mutation(offspring_crossover)
-
-        # The best result in the current iteration.
-        print("Best result : ", max(fitness))
-        best_match_idx = numpy.where(fitness == numpy.max(fitness))
-        best_fitness = fitness[best_match_idx]
-        print('Best idx: ', best_match_idx)
-        print("Best solution : ", population[best_match_idx])
-        print("Best solution fitness : ", best_fitness)
-        best_best_idx = best_match_idx[0] if len(best_match_idx[0]) > 1 else best_match_idx[0][0]
-
-        very_best = population[best_best_idx].squeeze().copy()
-        best_agents.append(very_best)
-        if max(fitness[best_match_idx] == 1.0) or generation == num_generations - 1:
-            print(f'Found earlier, generation: {generation}')
-            im = this_grid.visualize(blocks=best_agents[-1], show=True)
-            imgs = [this_grid.visualize(agent) for agent in best_agents]
-            im.save('test.gif', save_all=True, append_images=[im] * 3 + imgs)
-
-            break
-
-
-        # Creating the new population based on the parents and offspring.
-        population[:parents.shape[0], :] = parents
-        population[parents.shape[0]:, :] = offspring_mutation
+    ev = Evolution(blocks, this_grid, pop_size, num_parents_mating, num_generations)
+    ev.evolve()
 
     # Getting the best solution after iterating finishing all generations.
     # At first, the fitness is calculated for each solution in the final generation.

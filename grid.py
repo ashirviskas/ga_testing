@@ -73,7 +73,7 @@ class Grid:
         if blocks is not None:
             for block in blocks:
                 draw = ImageDraw.Draw(img)
-                draw.rectangle((block[0], block[1], block[0] + self.col_size, block[1] + self.row_size), fill=(120, 255, 255, 160))
+                draw.rectangle((block[0], block[1], block[0] + block[2], block[1] + block[3]), fill=(120, 255, 255, 160))
         if show:
             img.show()
         return img
