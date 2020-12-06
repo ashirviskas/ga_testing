@@ -19,15 +19,23 @@ class Grid:
         self.np_grid = np.zeros((self.width, self.height))
         self.np_grid[:, :] = -1
         self.col_size = ((self.width - (self.cols - 1) * self.col_gap) // self.cols)
+
         # upper left corner views
         self.np_grid[0::self.col_size + self.col_gap, 0::self.row_size + self.row_gap] = 0
         self.upper_left_corners = np.where(self.np_grid == 0)
+
         # upper right corner views
         self.np_grid[self.col_size::self.col_size + self.col_gap, 0::self.row_size + self.row_gap] = 1
+        self.upper_right_corners = np.where(self.np_grid == 1)
+
         # bottom left corner views
         self.np_grid[::self.col_size + self.col_gap, self.row_size::self.row_size + self.row_gap] = 2
+        self.bottom_left_corners = np.where(self.np_grid == 2)
+
         # bottom right corner views
         self.np_grid[self.col_size::self.col_size + self.col_gap, self.row_size::self.row_size + self.row_gap] = 3
+        self.bottom_right_corners = np.where(self.np_grid == 3)
+
         # img = self.np_grid.T.copy()
         # img = ((img + 1) / img.max()) * 255
         # img = Image.fromarray(img)
@@ -35,14 +43,15 @@ class Grid:
         # a = self.np_grid.T
         # print(self.np_grid.shape)
 
-    @staticmethod
-    def find_nearest_point(indexes, point):
-        x_dist = np.subtract(indexes[0], point[0])
-        y_dist = np.subtract(indexes[1], point[1])
+    def find_nearest_point(self, point):
+        x_left = point[0] % (self.col_size + self.col_gap)
+        x_right = (point[0] + self.col_size) % (self.col_size + self.col_gap)
+        x_dist = min(x_left, x_right)
+        y_top = point[1] % (self.row_size + self.row_gap)
+        y_bottom = (point[1] + self.row_size) % (self.row_size + self.row_gap)
+        y_dist = min(y_top, y_bottom)
         tot_dist = np.power(np.power(x_dist, 2) + np.power(y_dist, 2), 1 / 2)
-        idx = tot_dist.argmin()
-        distance = tot_dist[idx]
-        return idx, distance
+        return tot_dist
 
     @staticmethod
     def dist_to_score(dist):
@@ -58,7 +67,7 @@ class Grid:
         scores.append(-total_diff/10)
         # upper_left_corners = np.where(self.np_grid == 0)
         for block in blocks:
-            idx, dist = self.find_nearest_point(self.upper_left_corners, block)
+            dist = self.find_nearest_point(block)
             score = self.dist_to_score(dist)
             scores.append(score)
         total_score = sum(scores)
