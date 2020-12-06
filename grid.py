@@ -40,18 +40,28 @@ class Grid:
         y_dist = np.subtract(indexes[1], point[1])
         tot_dist = np.power(np.power(x_dist, 2) + np.power(y_dist, 2), 1 / 2)
         idx = tot_dist.argmin()
-        return idx, tot_dist[idx]
+        distance = tot_dist[idx]
+        return idx, distance
+
+    @staticmethod
+    def dist_to_score(dist):
+        if dist == 0:
+            return 100
+        else:
+            return -dist
 
     def calculate_blocks_score(self, blocks, original_blocks):
-        total_diff = abs(blocks - original_blocks).sum()
+        scores = []
 
+        total_diff = abs(blocks - original_blocks).sum()
+        scores.append(-total_diff/20)
         upper_left_corners = np.where(self.np_grid == 0)
-        distances = []
         for block in blocks:
             idx, dist = self.find_nearest_point(upper_left_corners, block)
-            distances.append(dist)
-
-        return -((sum(distances) ** 2) + 1 + total_diff / 10)
+            score = self.dist_to_score(dist)
+            scores.append(score)
+        total_score = sum(scores)
+        return total_score
 
     def visualize(self, blocks=None, show=False):
         img = Image.new('RGBA', self.np_grid.shape)
