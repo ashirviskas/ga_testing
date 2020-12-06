@@ -116,10 +116,10 @@ def main():
         ev = Evolution(blocks, this_grid, pop_size, num_parents_mating, num_generations)
         results = ev.evolve(non_increase_stop=-1)
         all_results.append(results)
-    for result in all_results:
-        plt.plot(range(num_generations), result)
-    # plt.plot()
-    plt.show()
+    # for result in all_results:
+    #     plt.plot(range(num_generations), result)
+    # # plt.plot()
+    # plt.show()
 
     # Getting the best solution after iterating finishing all generations.
     # At first, the fitness is calculated for each solution in the final generation.
