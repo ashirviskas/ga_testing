@@ -46,7 +46,7 @@ class Grid:
 
     @staticmethod
     def dist_to_score(dist):
-        if dist == 0:
+        if dist < 2:
             return 30
         else:
             return -dist
@@ -55,7 +55,7 @@ class Grid:
         scores = []
 
         total_diff = abs(blocks - original_blocks).sum()
-        scores.append(-total_diff/20)
+        scores.append(-total_diff/10)
         # upper_left_corners = np.where(self.np_grid == 0)
         for block in blocks:
             idx, dist = self.find_nearest_point(self.upper_left_corners, block)
@@ -77,7 +77,6 @@ class Grid:
         if show:
             img.show()
         return img
-
 
 
 if __name__ == '__main__':

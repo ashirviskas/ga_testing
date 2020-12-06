@@ -4,6 +4,7 @@ from block import Block
 from grid import Grid
 import numpy as np
 import random
+from matplotlib import pyplot as plt
 
 """
 The y=target is to maximize this equation ASAP:
@@ -48,8 +49,8 @@ class Evolution:
         offspring_crossover = ga.crossover(parents, self.population, self.num_offspring)
 
         # Adding some variations to the offsrping using mutation.
-        mutation_strength = (self.num_generations / (self.num_generations - i)) * 2
-        offspring_mutation = ga.mutation(offspring_crossover, mutation_scale=mutation_strength)
+        mutation_scale = (self.num_generations / ((self.num_generations - i)) + 1)
+        offspring_mutation = ga.mutation(offspring_crossover, mutation_scale=mutation_scale)
 
         best_match_idx = np.argmax(fitness)
         best_fitness = fitness[best_match_idx]
@@ -68,16 +69,28 @@ class Evolution:
         self.population[:parents.shape[0], :] = parents
         self.population[parents.shape[0]:, :] = offspring_mutation
         self.best_agents.append(very_best)
+        return max(fitness)
 
-    def evolve(self):
+    def evolve(self, save_gif=False, non_increase_stop=5, min_generations=40):
+        best_fitness = -1000
+        fitness_stagnant = 0
+        results = []
         for i in range(self.num_generations):
-            self.generation(i)
+            last_fitness = self.generation(i)
+            results.append(last_fitness)
+            if last_fitness > best_fitness:
+                best_fitness = last_fitness
+                fitness_stagnant = 0
+            else:
+                fitness_stagnant += 1
 
-            if i == self.num_generations - 1:
+            if i == self.num_generations - 1 or (fitness_stagnant == non_increase_stop and i > min_generations):
                 print(f'Found earlier, generation: {i}')
-                im = self.this_grid.visualize(blocks=self.best_agents[-1], show=True)
-                imgs = [self.this_grid.visualize(agent) for agent in self.best_agents]
-                im.save('test.gif', save_all=True, append_images=[im] * 3 + imgs)
+                im = self.this_grid.visualize(blocks=self.best_agents[-1], show=False)
+                if save_gif:
+                    imgs = [self.this_grid.visualize(agent) for agent in self.best_agents]
+                    im.save('test.gif', save_all=True, append_images=[im] * 3 + imgs)
+                return results
 
 
 def main():
@@ -93,13 +106,20 @@ def main():
     this_grid = Grid(rows=6)
     initial_img = this_grid.visualize(blocks=blocks, show=False)
     initial_img.save('initial_img.png')
-    pop_size = 48
-    num_parents_mating = 3
+    pop_size = 64
+    num_parents_mating = 1
 
-    num_generations = 360
-
-    ev = Evolution(blocks, this_grid, pop_size, num_parents_mating, num_generations)
-    ev.evolve()
+    num_generations = 160
+    all_results = []
+    tests = 10
+    for i in range(tests):
+        ev = Evolution(blocks, this_grid, pop_size, num_parents_mating, num_generations)
+        results = ev.evolve(non_increase_stop=-1)
+        all_results.append(results)
+    for result in all_results:
+        plt.plot(range(num_generations), result)
+    # plt.plot()
+    plt.show()
 
     # Getting the best solution after iterating finishing all generations.
     # At first, the fitness is calculated for each solution in the final generation.
