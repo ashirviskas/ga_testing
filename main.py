@@ -30,6 +30,7 @@ class Evolution:
         self.best_agents = []
 
         self.initialize_population()
+        ga.seed_np_choices((4, ), p=0.1, amount_choices=1000)
 
     def initialize_population(self,):
         self.population = np.tile(self.blocks, (self.pop_size, 1, 1))
@@ -107,19 +108,19 @@ def main():
     initial_img = this_grid.visualize(blocks=blocks, show=False)
     initial_img.save('initial_img.png')
     pop_size = 64
-    num_parents_mating = 1
+    num_parents_mating = 2
 
     num_generations = 160
     all_results = []
-    tests = 10
+    tests = 1
     for i in range(tests):
         ev = Evolution(blocks, this_grid, pop_size, num_parents_mating, num_generations)
-        results = ev.evolve(non_increase_stop=-1)
+        results = ev.evolve(min_generations=64, non_increase_stop=-1, save_gif=True)
         all_results.append(results)
-    # for result in all_results:
-    #     plt.plot(range(num_generations), result)
-    # # plt.plot()
-    # plt.show()
+    for result in all_results:
+        plt.plot(range(num_generations), result)
+    # plt.plot()
+    plt.show()
 
     # Getting the best solution after iterating finishing all generations.
     # At first, the fitness is calculated for each solution in the final generation.

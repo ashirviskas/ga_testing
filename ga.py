@@ -7,6 +7,15 @@ import random
 # Install PyGAD: pip install pygad
 # PyGAD source code at GitHub: https://github.com/ahmedfgad/GeneticAlgorithmPython
 
+NP_CHOICES = None
+
+
+def seed_np_choices(shape, p, amount_choices=1000):
+    global NP_CHOICES
+    shape = (amount_choices, *shape)
+    NP_CHOICES = np.random.choice([0, 1], size=shape, p=[1-p, p])
+
+
 
 def cal_pop_fitness(population, grid, original_blocks):
     fitness = np.zeros(population.shape[0])
@@ -48,12 +57,20 @@ def crossover(leaders, population, num_offspring):
     return offspring
 
 
+def get_mask(shape):
+    global NP_CHOICES
+    selections = np.random.randint(0, len(NP_CHOICES), size=(shape[0],))
+    mask = NP_CHOICES[selections]
+    return mask
+
+
 def mutation(pop, mutation_scale=1.0):
     # Mutation changes a single gene in each offspring randomly.
     for idx, p in enumerate(pop):
         # The random value to be added to the gene.
-        diff_mutation_mask = np.random.choice([0, 1], size=p.shape, p=[0.9, 0.1])
-        abs_mutation_mask = np.random.choice([0, 1], size=p.shape, p=[0.95, 0.05])
+        diff_mutation_mask = get_mask(p.shape) # np.random.choice([0, 1], size=p.shape, p=[0.8, 0.2])
+        abs_mutation_mask = get_mask(p.shape) #np.random.choice([0, 1], size=p.shape, p=[0.95, 0.05])
+
 
         diff_mutations = np.random.randint(-40, 40, size=p.shape) * mutation_scale
         abs_mutations = np.random.randint(0, 1000, size=p.shape) * mutation_scale

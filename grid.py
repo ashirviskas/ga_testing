@@ -68,16 +68,16 @@ class Grid:
     @functools.lru_cache(maxsize=1024, typed=False)
     def get_x_dist(self, x):
         x_left = x % self.full_col
-        x_right = (x + self.col_size) % self.full_col
+        x_right = abs((x % self.full_col) - self.col_size)
         x_dist = min(x_left, x_right)
         return x_dist
 
     @functools.lru_cache(maxsize=1024, typed=False)
     def get_y_dist(self, y):
         y_top = y % self.full_row
-        y_bottom = (y + self.row_size) % self.full_row
-        y_dist = min(y_top, y_bottom)
-        return y_dist
+        # y_bottom = abs((y % self.full_row) + self.row_gap)
+        # y_dist = min(y_top, y_bottom)
+        return y_top
 
     @functools.lru_cache(maxsize=2048, typed=False)
     def find_nearest_point(self, *point):
