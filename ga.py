@@ -59,21 +59,16 @@ def crossover(leaders, population, num_offspring):
 
 def get_mask(shape):
     global NP_CHOICES
-    selections = np.random.randint(0, len(NP_CHOICES), size=(shape[0],))
+    selections = np.random.randint(0, len(NP_CHOICES))
     mask = NP_CHOICES[selections]
     return mask
 
 
-def mutation(pop, mutation_scale=1.0):
+def mutation(pop):
     # Mutation changes a single gene in each offspring randomly.
     for idx, p in enumerate(pop):
         # The random value to be added to the gene.
-        diff_mutation_mask = get_mask(p.shape) # np.random.choice([0, 1], size=p.shape, p=[0.8, 0.2])
-        abs_mutation_mask = get_mask(p.shape) #np.random.choice([0, 1], size=p.shape, p=[0.95, 0.05])
-
-
-        diff_mutations = np.random.randint(-40, 40, size=p.shape) * mutation_scale
-        abs_mutations = np.random.randint(0, 1000, size=p.shape) * mutation_scale
-        pop[idx] = np.abs(p + (diff_mutation_mask * diff_mutations))
+        mutation_mask = get_mask(p.shape)
+        pop[idx] = p != mutation_mask
         # pop[idx] = (abs_mutations * abs_mutation_mask) + (1 - abs_mutation_mask) * p
     return pop

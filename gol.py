@@ -29,6 +29,10 @@ class GameOfLife:
         next_grid[neighbors == 3] = 1
         self.grid = next_grid
 
+    def do_steps(self, n):
+        for i in range(n):
+            self.step()
+
 
 
 
